@@ -1,241 +1,174 @@
-# Scroll Bottom Sheet
-[![npm](https://img.shields.io/npm/v/react-native-scroll-bottom-sheet?color=brightgreen)](https://www.npmjs.com/package/react-native-scroll-bottom-sheet)
-[![npm bundle size](https://img.shields.io/bundlephobia/min/react-native-scroll-bottom-sheet)](https://bundlephobia.com/result?p=react-native-scroll-bottom-sheet)
-![platforms: ios, android, web](https://img.shields.io/badge/platform-ios%2C%20android-blue)
-[![license MIT](https://img.shields.io/badge/license-MIT-brightgreen)](https://github.com/rgommezz/react-native-scroll-bottom-sheet/blob/master/LICENSE)
+# Reanimated Bottom Sheet
+Highly configurable component imitating [native bottom sheet behavior](https://material.io/design/components/sheets-bottom.html#standard-bottom-sheet), with fully native 60 FPS animations!
 
-Cross platform scrollable bottom sheet with virtualisation support and fully native animations, that integrates with all core scrollable components from React Native: [FlatList](https://reactnative.dev/docs/flatlist), [ScrollView](https://reactnative.dev/docs/scrollview) and [SectionList](https://reactnative.dev/docs/sectionlist). Also, it's 100% compatible with Expo.
+Built from scratch with [react-native-gesture-handler](https://github.com/kmagiera/react-native-gesture-handler) and [react-native-reanimated](https://github.com/kmagiera/react-native-reanimated).
 
-<br />
+Usable with Expo with no extra native dependencies!
 
-![](gifs/bank.gif)  |  ![](gifs/maps.gif) |
-:---------------------:|:------------------:|
+![](gifs/1.gif)  |  ![](gifs/2.gif) |  ![](gifs/3.gif)  |  ![](gifs/4.gif)  |
+:---------------:|:----------------:|:-----------------:|:-----------------:|
 
-<br />
-
-## Features
-- **:electron: Virtualisation support**: `FlatList` and `SectionList` components are 1st class citizens, as well as `ScrollView`
-- **:fire: Performant**: runs at 60 FPS even on low grade Android devices
-- **:white_check_mark: Horizontal mode**: allows for nice implementation of Google or Apple Maps bottom sheets types, where you have several horizontal lists embedded
-- **:gear: Minimalistic**: exposes a set of fundamental props to easily control its behaviour, supporting both Timing and Spring animations
-- **:point_down: Support for interruptions**: animations can be interrupted anytime smoothly without sudden jumps
-- **:sunglasses: Imperative snapping**: for cases where you need to close the bottom sheet by pressing an external touchable
-- **:rocket: Animate all the things**: you can animate other elements on the screen based on the bottom sheet position
-- **:muscle: No native dependencies**: fully implemented in JS land, thanks to the powerful [Gesture Handler](https://github.com/software-mansion/react-native-gesture-handler) and [Reanimated](https://github.com/software-mansion/react-native-reanimated) libraries
-- **:iphone: Expo compatible**: no need to eject to enjoy this component!
-- **:hammer_and_wrench: TS definitions**: For those of you like me who can't look back to start a project in plain JS
 
 ## Installation
 
-#### npm
+Open a Terminal in the project root and run:
 
 ```sh
-npm i react-native-scroll-bottom-sheet
+yarn add reanimated-bottom-sheet
 ```
 
-#### yarn
+Or if you use npm:
+
 ```sh
-yarn add react-native-scroll-bottom-sheet
+npm install reanimated-bottom-sheet
 ```
 
-If you don't use Expo, you also need to install [react-native-gesture-handler](https://github.com/software-mansion/react-native-gesture-handler) and [react-native-reanimated](https://github.com/software-mansion/react-native-reanimated) libraries along with this one.
+Now we need to install [`react-native-gesture-handler`](https://github.com/kmagiera/react-native-gesture-handler) and [`react-native-reanimated`](https://github.com/kmagiera/react-native-reanimated).
 
-It's recommended you install a version of gesture handler equal or higher than `1.6.0`, and for reanimated, equal or higher than `1.7.0`. Otherwise you may run into unexpected errors. This library is also compatible with reanimated 2.x, starting with `react-native-reanimated: 2.0.0-alpha.4`.
+If you are using Expo, to ensure that you get the compatible versions of the libraries, run:
+
+```sh
+expo install react-native-gesture-handler react-native-reanimated
+```
+
+If you are not using Expo, run the following:
+
+```sh
+yarn add react-native-reanimated react-native-gesture-handler
+```
+
+Or if you use npm:
+
+```sh
+npm install react-native-reanimated react-native-gesture-handler
+```
+
+We're done! Now you can build and run the app on your device/simulator.
 
 ## Usage
 
-The below is an example using the core `FlatList` from React Native as the scrollable component.
+```javascript
+import * as React from 'react';
+import { StyleSheet, Text, View, Button } from 'react-native';
+import Animated from 'react-native-reanimated';
+import BottomSheet from 'reanimated-bottom-sheet';
 
-```tsx
-import React from 'react';
-import { Dimensions, StyleSheet, Text, View } from 'react-native';
-import ScrollBottomSheet from 'react-native-scroll-bottom-sheet';
-
-const windowHeight = Dimensions.get('window').height;
-
-function Example() {
-  return (
-    <View style={styles.container}>
-      <ScrollBottomSheet<string> // If you are using TS, that'll infer the renderItem `item` type
-        componentType="FlatList"
-        snapPoints={[128, '50%', windowHeight - 200]}
-        initialSnapIndex={2}
-        renderHandle={() => (
-          <View style={styles.header}>
-            <View style={styles.panelHandle} />
-          </View>
-        )}
-        data={Array.from({ length: 200 }).map((_, i) => String(i))}
-        keyExtractor={i => i}
-        renderItem={({ item }) => (
-          <View style={styles.item}>
-            <Text>{`Item ${item}`}</Text>
-          </View>
-        )}
-        contentContainerStyle={styles.contentContainerStyle}
-      />
+export default function App() {
+  const renderContent = () => (
+    <View
+      style={{
+        backgroundColor: 'white',
+        padding: 16,
+        height: 450,
+      }}
+    >
+      <Text>Swipe down to close</Text>
     </View>
   );
-}
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  contentContainerStyle: {
-    padding: 16,
-    backgroundColor: '#F3F4F9',
-  },
-  header: {
-    alignItems: 'center',
-    backgroundColor: 'white',
-    paddingVertical: 20,
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20
-  },
-  panelHandle: {
-    width: 40,
-    height: 2,
-    backgroundColor: 'rgba(0,0,0,0.3)',
-    borderRadius: 4
-  },
-  item: {
-    padding: 20,
-    justifyContent: 'center',
-    backgroundColor: 'white',
-    alignItems: 'center',
-    marginVertical: 10,
-  },
-});
+  const sheetRef = React.useRef(null);
+
+  return (
+    <>
+      <View
+        style={{
+          flex: 1,
+          backgroundColor: 'papayawhip',
+          alignItems: 'center',
+          justifyContent: 'center',
+        }}
+      >
+        <Button
+          title="Open Bottom Sheet"
+          onPress={() => sheetRef.current.snapTo(0)}
+        />
+      </View>
+      <BottomSheet
+        ref={sheetRef}
+        snapPoints={[450, 300, 0]}
+        borderRadius={10}
+        renderContent={renderContent}
+      />
+    </>
+  );
+}
 ```
 
 ## Props
-There are 2 types of props this component receives: explicit and inherited.
 
-### Explicit
-This is the list of exclusive props that are meant to be used to customise the bottom sheet behaviour.
-
-
-| Name                      | Required | Type | Description |
+| name                      | required | default | description |
 | ------------------------- | -------- | ------- | ------------|
-| `componentType`             | yes      | `string `       | 'FlatList', 'ScrollView', or 'SectionList' |
-| `snapPoints`                | yes      | `Array<string \| number>`       | Array of numbers and/or percentages that indicate the different resting positions of the bottom sheet (in dp or %), **starting from the top**. If a percentage is used, that would translate to the relative amount of the total window height. If you want that percentage to be calculated based on the parent available space instead, for example to account for safe areas or navigation bars, use it in combination with `topInset` prop |
-| `initialSnapIndex`          | yes      | `number`       | Index that references the initial resting position of the drawer, **starting from the top** |
-| `renderHandle`              | yes      |  `() => React.ReactNode`      | Render prop for the handle, should return a React Element |
-| `onSettle`                  | no       |  `(index: number) => void`       | Callback that is executed right after the bottom sheet settles in one of the snapping points. The new index is provided on the callback |
-| `animationType`             | no       | `string`        | `timing` (default)  or `spring` |
-| `animationConfig`           | no       | `TimingConfig` or `SpringConfig`         | Timing or Spring configuration for the animation. If `animationType` is `timing`, it uses by default a timing configuration with a duration of 250ms and easing fn `Easing.inOut(Easing.linear)`. If `animationType` is `spring`, it uses [this default spring configuration](https://github.com/rgommezz/react-native-scroll-bottom-sheet/blob/master/src/index.tsx#L77). You can partially override any parameter from the animation config as per your needs   |
-| `animatedPosition`          | no       |  `Animated.Value<number>`       | Animated value that tracks the position of the drawer, being: 0 => closed, 1 => fully opened |
-| `topInset`                  | no       | `number`  | This value is useful to provide an offset (in dp) when applying percentages for snapping points |
-| `innerRef`                  | no       | `RefObject`  | Ref to the inner scrollable component (ScrollView, FlatList or SectionList), so that you can call its imperative methods. For instance, calling `scrollTo` on a ScrollView. In order to so, you have to use `getNode` as well, since it's wrapped into an _animated_ component: `ref.current.getNode().scrollTo({y: 0, animated: true})` |
-| `containerStyle`            | no       | `StyleProp<ViewStyle>`  | Style to be applied to the container (Handle and Content) |
-| `friction`                  | no       | `number`      | Factor of resistance when the gesture is released. A value of 0 offers maximum * acceleration, whereas 1 acts as the opposite. Defaults to 0.95 |
-| `enableOverScroll`          | no       | `boolean`     | Allow drawer to be dragged beyond lowest snap point |
+| snapPoints                | yes      |         | E.g. `[300, 200, 0]`. Points for snapping of bottom sheet coomponent. They define distance from bottom of the screen. Might be number or percent (as string e.g. `'20%'`) for points or percents of screen height from bottom. Note: Array values must be in descending order. |
+| initialSnap               | no       |    0    | Determines initial snap point of bottom sheet. The value is the index from snapPoints. |
+| renderContent             | no       |         | Method for rendering scrollable content of bottom sheet. |
+| renderHeader              | no       |         | Method for rendering non-scrollable header of bottom sheet. |
+| enabledGestureInteraction | no       | `true`  | Defines if bottom sheet could be scrollable by gesture. |
+| enabledHeaderGestureInteraction | no       | `true`  | Defines if bottom sheet header could be scrollable by gesture. |
+| enabledContentGestureInteraction | no       | `true`  | Defines if bottom sheet content could be scrollable by gesture. |
+| enabledContentTapInteraction | no       | `true`  | Defines whether bottom sheet content could be tapped. **Note:** If you use `Touchable*` components inside your `renderContent`, you'll have to switch this to `false` to make handlers like `onPress` work. (See [this comment](https://github.com/osdnk/react-native-reanimated-bottom-sheet/issues/219#issuecomment-625894292).) |
+| enabledManualSnapping     | no       | `true`  | If `false` blocks snapping using `snapTo` method. |
+| enabledBottomClamp        | no       | `false` | If `true` block movement is clamped from bottom to minimal snapPoint. |
+| enabledBottomInitialAnimation        | no       | `false` | If `true` sheet will grows up from bottom to initial snapPoint. |
+| enabledInnerScrolling     | no       | `true`  | Defines whether it's possible to scroll inner content of bottom sheet. |
+| callbackNode              | no       |         | `reanimated` node which holds position of bottom sheet, where `0` it the highest snap point and `1` is the lowest. |
+| contentPosition           | no       |         | `reanimated` node which holds position of bottom sheet's content (in dp) |
+| headerPosition           | no       |         | `reanimated` node which holds position of bottom sheet's header (in dp) |
+| overdragResistanceFactor  | no       |   0     | `Defines how violently sheet has to stopped while overdragging. 0 means no overdrag |
+| springConfig              | no       | `{ }`   | Overrides config for spring animation |
+| innerGestureHandlerRefs   | no       |         | Refs for gesture handlers used for building bottom sheet. The array consists fo three refs. The first for PanGH used for inner content scrolling. The second for PanGH used for header. The third for TapGH used for stopping scrolling the content.   |
+| simultaneousHandlers | no       |         | Accepts a react ref object or an array of refs to handler components. |
+| onOpenStart | no       |         | Accepts a function to be called when the bottom sheet starts to open. |
+| onOpenEnd | no       |         | Accepts a function to be called when the bottom sheet is almost fully openned. |
+| onCloseStart | no       |         | Accepts a function to be called when the bottom sheet starts to close. |
+| onCloseEnd | no       |         | Accepts a function to be called when the bottom sheet is almost closing. |
+| callbackThreshold | no       |    0.01     | Accepts a float value from 0 to 1 indicating the percentage (of the gesture movement) when the callbacks are gonna be called. |
+| borderRadius | no       |        | Border radius of content wrapper (excluding header) |
 
-
-### Inherited
-Depending on the value of `componentType` chosen, the bottom sheet component will inherit its underlying props, being one of
-[FlatListProps](https://reactnative.dev/docs/flatlist#props), [ScrollViewProps](https://reactnative.dev/docs/scrollview#props) or [SectionListProps](https://reactnative.dev/docs/sectionlist#props), so that you can tailor the scrollable content behaviour as per your needs.
 
 ## Methods
 
-#### `snapTo(index)`
+### `snapTo(index)`
 
-Imperative method to snap to a specific index, i.e.
+Imperative method on for snapping to snap point in given index. E.g.
 
-```js
-bottomSheetRef.current.snapTo(0)
+```javascript
+// Snap to the snap point at index 0 (e.g. 450 in [450, 300, 0])
+this.bottomSheetRef.current.snapTo(0)
 ```
 
-`bottomSheetRef` refers to the [`ref`](https://reactjs.org/docs/react-api.html#reactcreateref) passed to the `ScrollBottomSheet` component.
-
-## Compatibility table
-You may add some touchable components inside the bottom sheet or several `FlatList` widgets for horizontal mode. Unfortunately, not all _interactable_ React Native components are compatible with this library. This is due to some limitations on `react-native-gesture-handler`, which this library uses behind the scenes. For that, please follow this compatibility table:
-
-| Import                       | Touchable | Flatlist    |
-| -------------------------    | --------  | -------     |
-| react-native                 | iOS       |      🚫     |
-| react-native-gesture-handler | Android   | Android, iOS|
-
-### Touchables
-As you can see on the table, for any touchable component (`TouchableOpacity`, `TouchableHighlight`, ...) you need to have different imports depending on the platform. The below is a snippet you may find useful to abstract that into a component.
-
-```js
-import React from "react";
-import { Platform, TouchableOpacity } from "react-native";
-import { TouchableOpacity as RNGHTouchableOpacity } from "react-native-gesture-handler";
-
-const BottomSheetTouchable = (props) => {
-  if (Platform.OS === "android") {
-    return (
-      <RNGHTouchableOpacity {...props} />
-    );
-  }
-
-  return <TouchableOpacity {...props} />
-};
-
-export default BottomSheetTouchable;
-```
-
-### Horizontal Mode
-For this mode to work properly, **you have to import `FlatList` from react-native-gesture-handler** instead of react-native.
-
-```js
-import { FlatList } from 'react-native-gesture-handler';
-
-...
-```
-
-## Limitations
-At the moment, the component does not support updating snap points via state, something you may want to achieve when changing device orientation for instance. A temporary workaround is to leverage React keys to force a re-mount of the component. This is some illustrative code to give you an idea how you could handle an orientation change with keys:
-
-```js
-import { useDimensions } from '@react-native-community/hooks'
-
-const useOrientation = () => {
-  const { width, height } = useDimensions().window;
-
-  if (height > width) {
-    return 'portrait'
-  }
-
-  return 'landscape'
-}
-
-const OrientationAwareBS = () => {
-	const orientation = useOrientation();
-	const snapPoints = {
-		portrait: [...],
-		landscape: [...]
-	}
-
-	return (
-      <ScrollBottomSheet
- 		key={orientation}
-        componentType="FlatList"
-        snapPoints={snapPoints[orientation]}
-        initialSnapIndex={2}
-        ...
-      />
-	);
-}
-```
+Here `this.bottomSheetRef` refers [to the `ref`](https://reactjs.org/docs/react-api.html#reactcreateref) passed to the `BottomSheet` component.
 
 ## Example
-There is an Expo example application that you can play with to get a good grasp on the different customisation options. In case of Android, you can directly open the project [here](https://expo.io/@rgommezz/react-native-scroll-bottom-sheet-example). For iOS, head to the [example folder](https://github.com/rgommezz/react-native-scroll-bottom-sheet/tree/master/example) and run the project locally:
 
-```bash
-$ npm install
+More complex examples can be found in the `Example` folder. To view the examples in the [Expo app](https://expo.io/), open a Terminal and run:
 
-$ npm start
+```sh
+yarn
+yarn prepare
+cd Example
+yarn
+expo start
 ```
 
-## Typescript
-The library has been written in Typescript, so you'll get type checking and autocompletion if you use it as well.
+The example app is also available on [Expo](https://expo.io/@osdnk/reanimated-bottomsheet-expample).
 
-## License
+## Todo
 
-MIT © [Raul Gomez Acuna](https://raulgomez.io/)
+It's not finished and some work has to be done yet.
 
-If you found this project interesting, please consider following me on [twitter](https://twitter.com/rgommezz)
+1. Play with magic config values
+2. Horizontal mode
+3. Deal with GH in inner scrollView
+4. Cleanup code (e.g. measuring of components)
+
+## Contributing
+
+### Publishing a release
+
+We use [release-it](https://github.com/release-it/release-it) to automate our release. If you have publish access to the NPM package, run the following from the master branch to publish a new release:
+
+```sh
+yarn release
+```
+
+NOTE: You must have a `GITHUB_TOKEN` environment variable available. You can create a GitHub access token with the "repo" access [here](https://github.com/settings/tokens).
