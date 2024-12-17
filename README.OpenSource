@@ -1,0 +1,20 @@
+[
+    {
+        "Name": "react-native-scroll-bottom-sheet",
+        "License": "MIT License",
+        "License File": "https://github.com/rgommezz/react-native-scroll-bottom-sheet/blob/master/LICENSE",
+        "Version Number": "1.2.1",
+        "Owner" : "xiafeng@huawei.com",
+        "Upstream URL": "https://github.com/rgommezz/react-native-scroll-bottom-sheet",
+        "Description": "native scroll bottom sheet library for react-native"
+    },
+    {
+        "Name": "@react-native-oh-tpl/bottom-sheet",
+        "License": "MIT License",
+        "License File": "https://github.com/react-native-oh-library/react-native-bottom-sheet/blob/sig/LICENSE",
+        "Version Number": "4.6.4-0.0.2",
+        "Owner" : "xiafeng@huawei.com",
+        "Upstream URL": "https://github.com/react-native-oh-library/react-native-bottom-sheet",
+        "Description": "A performant interactive bottom sheet with fully configurable options"
+    }
+]
