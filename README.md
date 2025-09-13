@@ -1,4 +1,4 @@
-# @react-native-oh-tpl/react-native-scroll-bottom-sheet
+# @react-native-ohos/react-native-scroll-bottom-sheet
 
 This project is based on [react-native-scroll-bottom-sheet](https://github.com/rgommezz/react-native-scroll-bottom-sheet)
 
