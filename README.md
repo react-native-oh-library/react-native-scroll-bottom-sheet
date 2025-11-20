@@ -1,6 +1,6 @@
 # @react-native-ohos/react-native-scroll-bottom-sheet
 
-This project is based on [react-native-scroll-bottom-sheet](https://github.com/rgommezz/react-native-scroll-bottom-sheet)
+This project is based on [react-native-scroll-bottom-sheet@0.7.0](https://github.com/rgommezz/react-native-scroll-bottom-sheet/tree/v0.7.0)
 
 ## Documentation
 
