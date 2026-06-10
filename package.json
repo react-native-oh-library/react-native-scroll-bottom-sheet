@@ -1,6 +1,6 @@
 {
   "name": "@react-native-ohos/react-native-scroll-bottom-sheet",
-  "version": "0.8.0-rc.1",
+  "version": "0.8.0",
   "description": "Scroll Bottom sheet component",
   "main": "lib/commonjs/index.js",
   "module": "lib/module/index.js",

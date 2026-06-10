@@ -4,9 +4,9 @@ This project is based on [react-native-scroll-bottom-sheet@0.7.0](https://github
 
 ## Documentation
 
-- [中文](https://gitee.com/react-native-oh-library/usage-docs/blob/master/zh-cn/react-native-scroll-bottom-sheet.md)
+- [中文](https://gitcode.com/CPF-RN/usage-docs/blob/master/zh-cn/react-native-scroll-bottom-sheet.md)
 
-- [English](https://gitee.com/react-native-oh-library/usage-docs/blob/master/en/react-native-scroll-bottom-sheet.md)
+- [English](https://gitcode.com/CPF-RN/usage-docs/blob/master/en/react-native-scroll-bottom-sheet.md)
 
 ## License
 
