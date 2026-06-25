@@ -4,49 +4,32 @@
  * found in the LICENSE file.
  */
 import React, {
-  useCallback,
   useRef,
   forwardRef,
   useImperativeHandle,
   useState,
   useMemo,
-  useEffect,
+  useCallback,
 } from 'react';
-import {View, StyleSheet, Animated, Dimensions, Text,FlatList,SectionList,ScrollView} from 'react-native';
+import {
+  StyleSheet,
+  Dimensions,
+  Text,
+  FlatList,
+  ScrollView,
+  SectionList,
+  Platform,
+} from 'react-native';
 import BottomSheet, {
   useBottomSheetTimingConfigs,
   useBottomSheetSpringConfigs,
 } from '@gorhom/bottom-sheet';
 import {GestureHandlerRootView} from 'react-native-gesture-handler';
-import {Easing} from 'react-native-reanimated';
-const SCREEN_HEIGHT = Dimensions.get('window').height;
-type TimingConfig = {
-  duration: number;
-  easing: typeof Easing.exp | typeof Easing.inOut;
-};
-type SpringConfig = {
-  damping: number;
-  overshootClamping: boolean;
-  restDisplacementThreshold: number;
-  restSpeedThreshold: number;
-  stiffness: number;
-};
-type PropTypes = {
-  componentType: 'FlatList' | 'ScrollView' | 'SectionList';
-  snapPoints: Array<string | number>;
-  initialSnapIndex: number;
-  renderHandle: () => React.ReactNode;
-  animationType?: 'timing(default)' | 'spring';
-  animationConfig?: TimingConfig | SpringConfig | {};
-  animatedPosition?: any;
-  topInset?: number;
-  innerRef?: React.MutableRefObject<T>;
-  friction?: number;
-  enableOverScroll?: boolean;
-  containerStyle?: any;
-};
 
-const ScrollBottomSheet=forwardRef((props: PropTypes,ref)=>{
+const SCREEN_HEIGHT = Dimensions.get('window').height;
+const IS_HARMONY = Platform.OS === 'harmony';
+
+const ScrollBottomSheet = forwardRef((props, ref) => {
   const {
     componentType,
     renderHandle,
@@ -62,9 +45,7 @@ const ScrollBottomSheet=forwardRef((props: PropTypes,ref)=>{
     containerStyle,
     ...rest
   } = props;
-  useImperativeHandle(ref, () => ({
-    snapTo,
-  }));
+
   const snapPointsLen = props.snapPoints.length;
   const getCurrentIndex = i => {
     if (!i) {
@@ -72,22 +53,43 @@ const ScrollBottomSheet=forwardRef((props: PropTypes,ref)=>{
     }
     return snapPointsLen - 1 - i;
   };
-  const [currentIndex, setCurrentIndex] = useState(getCurrentIndex(props.initialSnapIndex));
-  const reverseSnapPoints = props.snapPoints
-    .map(item => {
-      if (typeof item == 'string') {
-        let number = (parseFloat(item, 10) * SCREEN_HEIGHT) / 100;
-        let parseItem=parseInt(
-          SCREEN_HEIGHT - number + (typeof topInset == 'number' ? topInset : 0),
-        );
-        let newItem=parseItem>0?parseItem:0.01;
-        return newItem;
-      }
-      let parseItem=parseInt(SCREEN_HEIGHT - item);
-      let newItem=parseItem>0?parseItem:0.01;
-      return newItem;
-    })
-    .reverse();
+
+  const getUserSnapIndex = gorhomIndex => {
+    if (gorhomIndex < 0) {
+      return gorhomIndex;
+    }
+    return snapPointsLen - 1 - gorhomIndex;
+  };
+
+  const [currentIndex, setCurrentIndex] = useState(() =>
+    getCurrentIndex(props.initialSnapIndex),
+  );
+  const onSettleRef = useRef(onSettle);
+  const prevSettleIndexRef = useRef(props.initialSnapIndex);
+  onSettleRef.current = onSettle;
+
+  const snapPointsSignature = props.snapPoints
+    .map(point => String(point))
+    .join('|');
+
+  const reverseSnapPoints = useMemo(
+    () =>
+      props.snapPoints
+        .map(item => {
+          if (typeof item == 'string') {
+            const number = (parseFloat(item, 10) * SCREEN_HEIGHT) / 100;
+            const parseItem = parseInt(
+              SCREEN_HEIGHT - number + (typeof topInset == 'number' ? topInset : 0),
+            );
+            return parseItem > 0 ? parseItem : 0.01;
+          }
+          const parseItem = parseInt(SCREEN_HEIGHT - item);
+          return parseItem > 0 ? parseItem : 0.01;
+        })
+        .reverse(),
+    [snapPointsSignature, topInset],
+  );
+
   const animationTimingConfigs = useBottomSheetTimingConfigs({
     duration: 250,
     ...animationConfig,
@@ -101,9 +103,14 @@ const ScrollBottomSheet=forwardRef((props: PropTypes,ref)=>{
     stiffness: 500,
     ...animationConfig,
   });
-  const animationConfigs=animationType && animationType == 'spring'? animationSpringConfigs: animationTimingConfigs;
-  // ref
+
+  const animationConfigs =
+    animationType && animationType == 'spring'
+      ? animationSpringConfigs
+      : animationTimingConfigs;
+
   const bottomSheetRef = useRef(null);
+
   const snapTo = index => {
     bottomSheetRef.current.snapToIndex(
       getCurrentIndex(index),
@@ -111,72 +118,102 @@ const ScrollBottomSheet=forwardRef((props: PropTypes,ref)=>{
     );
   };
 
+  useImperativeHandle(ref, () => ({
+    snapTo,
+  }));
+
+  const emitOnSettle = userIndex => {
+    if (onSettleRef.current && userIndex !== prevSettleIndexRef.current) {
+      prevSettleIndexRef.current = userIndex;
+      onSettleRef.current(userIndex);
+    }
+  };
+
+  const handleSheetChange = useCallback(index => {
+    if (index < 0) {
+      return;
+    }
+    setCurrentIndex(index);
+    emitOnSettle(getUserSnapIndex(index));
+  }, []);
+
+  const handleAnimateForSettle = useCallback((fromIndex, toIndex) => {
+    if (!IS_HARMONY || toIndex < 0 || fromIndex === toIndex) {
+      return;
+    }
+    emitOnSettle(getUserSnapIndex(toIndex));
+  }, []);
+
+  const mergedContentContainerStyle = {
+    ...contentContainerStyle,
+    ...containerStyle,
+  };
+
   const renderChildren = componentType => {
     switch (componentType) {
       case 'FlatList':
         return (
           <FlatList
-           contentContainerStyle={{contentContainerStyle,...containerStyle}}
+            contentContainerStyle={mergedContentContainerStyle}
             ref={innerRef}
-            data={rest.data}
-            keyExtractor={i => i}
-            renderItem={rest.renderItem}
             {...rest}
           />
         );
-        break;
       case 'ScrollView':
         return (
-          <ScrollView contentContainerStyle={{contentContainerStyle,...containerStyle}} ref={innerRef} {...rest}>
+          <ScrollView
+            contentContainerStyle={mergedContentContainerStyle}
+            ref={innerRef}
+            {...rest}>
             {props.children}
           </ScrollView>
         );
-        break;
       case 'SectionList':
         return (
           <SectionList
-            contentContainerStyle={{contentContainerStyle,...containerStyle}}
+            contentContainerStyle={mergedContentContainerStyle}
             ref={innerRef}
-            sections={rest.sections}
-            keyExtractor={(i) => i}
-            renderSectionHeader={rest.renderSectionHeader}
-            renderItem={rest.renderItem}
             {...rest}
           />
         );
-        break;
       default:
         return (
-          <ScrollView contentContainerStyle={{contentContainerStyle,...containerStyle}} ref={innerRef} {...rest}>
+          <ScrollView
+            contentContainerStyle={mergedContentContainerStyle}
+            ref={innerRef}
+            {...rest}>
             <Text>Awesome 🔥</Text>
           </ScrollView>
         );
     }
   };
 
-  // renders
   return (
-    <GestureHandlerRootView style={{flex:1}}>
-        <BottomSheet
-            ref={bottomSheetRef}
-            backgroundStyle={containerStyle}
-            snapPoints={reverseSnapPoints}
-            index={currentIndex}
-            handleComponent={renderHandle}
-            onChange={onSettle}
-            animationConfigs={animationConfigs}
-            animatedPosition={animatedPosition}
-            enableOverDrag={enableOverScroll ? true : false}
-            overDragResistanceFactor={
-              friction && friction < 1 ? friction * 10 : 2.5
-            }
-            enablePanDownToClose={reverseSnapPoints.includes(0.01)}
-            enableHandlePanningGesture={true}>
-            {renderChildren(componentType)}
-        </BottomSheet>
+    <GestureHandlerRootView style={{flex: 1}}>
+      <BottomSheet
+        ref={bottomSheetRef}
+        enableDynamicSizing={false}
+        backgroundStyle={containerStyle}
+        snapPoints={reverseSnapPoints}
+        index={currentIndex}
+        handleComponent={renderHandle}
+        onChange={handleSheetChange}
+        onAnimate={IS_HARMONY ? handleAnimateForSettle : undefined}
+        animationConfigs={animationConfigs}
+        animatedPosition={animatedPosition}
+        enableOverDrag={enableOverScroll ? true : false}
+        overDragResistanceFactor={
+          friction && friction < 1 ? friction * 10 : 2.5
+        }
+        enablePanDownToClose={reverseSnapPoints.includes(0.01)}
+        enableHandlePanningGesture={true}
+        enableContentPanningGesture={true}>
+        {renderChildren(componentType)}
+      </BottomSheet>
     </GestureHandlerRootView>
   );
 });
+
 const styles = StyleSheet.create({
   contentContainer: {},
   itemContainer: {
@@ -185,4 +222,5 @@ const styles = StyleSheet.create({
     backgroundColor: '#eee',
   },
 });
+
 export default ScrollBottomSheet;
